@@ -11,12 +11,28 @@ describe('Integration Tests - Sales/POS Dashboard (TEST-I01..I12)', () => {
   let sampleCustomer: any;
 
   beforeAll(async () => {
-    // Safely delete only test-specific fixtures to preserve dev database catalog
-    await prisma.saleItem.deleteMany({ where: { product: { sku: { startsWith: 'TEST-' } } } });
+    // 1. Delete test sale items and sale headers first to satisfy Foreign Key constraints
+    await prisma.saleItem.deleteMany({
+      where: {
+        OR: [
+          { sale: { user: { email: { in: ['admintest@pos.com', 'stafftest@pos.com'] } } } },
+          { product: { sku: { in: ['TEST-SKU-100', 'CRUD-SKU-001'] } } }
+        ]
+      }
+    });
+
+    await prisma.sale.deleteMany({
+      where: {
+        user: { email: { in: ['admintest@pos.com', 'stafftest@pos.com'] } }
+      }
+    });
+
+    // 2. Delete test products, customers, and users safely
     await prisma.product.deleteMany({ where: { sku: { in: ['TEST-SKU-100', 'CRUD-SKU-001'] } } });
     await prisma.customer.deleteMany({ where: { email: { in: ['customer@test.com', 'e2e@customer.com'] } } });
     await prisma.user.deleteMany({ where: { email: { in: ['admintest@pos.com', 'stafftest@pos.com'] } } });
 
+    // 3. Create fresh clean test fixtures
     const adminPassword = await bcrypt.hash('admin123', 10);
     const staffPassword = await bcrypt.hash('staff123', 10);
 
