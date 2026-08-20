@@ -127,17 +127,19 @@ describe('Unit Tests - Sales/POS Dashboard (TEST-U01..U08)', () => {
     it('harus memetakan AppError ke format respons JSON standar', () => {
       const err = new NotFoundError('Barang hilang');
       const res = formatErrorResponse(err);
+      const body = res.body as any;
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe('NOT_FOUND');
-      expect(res.body.error.message).toBe('Barang hilang');
+      expect(body.error.code).toBe('NOT_FOUND');
+      expect(body.error.message).toBe('Barang hilang');
     });
 
     it('harus memetakan ValidationError dengan details', () => {
       const err = new ValidationError('Payload invalid', [{ field: 'price', message: 'Min 0' }]);
       const res = formatErrorResponse(err);
+      const body = res.body as any;
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe('VALIDATION_ERROR');
-      expect(res.body.error.details).toEqual([{ field: 'price', message: 'Min 0' }]);
+      expect(body.error.code).toBe('VALIDATION_ERROR');
+      expect(body.error.details).toEqual([{ field: 'price', message: 'Min 0' }]);
     });
   });
 
@@ -156,7 +158,7 @@ describe('Unit Tests - Sales/POS Dashboard (TEST-U01..U08)', () => {
     });
 
     it('harus menolak password kurang dari 6 karakter saat hashing', async () => {
-      expect(hashPassword('123')).rejects.toThrow();
+      await expect(hashPassword('123')).rejects.toThrow();
     });
   });
 });

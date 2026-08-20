@@ -3,6 +3,19 @@ export interface ErrorDetail {
   message: string;
 }
 
+export interface FormattedErrorResponseBody {
+  error: {
+    code: string;
+    message: string;
+    details?: ErrorDetail[];
+  };
+}
+
+export interface FormattedErrorResponse {
+  status: number;
+  body: FormattedErrorResponseBody;
+}
+
 export class AppError extends Error {
   public statusCode: number;
   public code: string;
@@ -52,7 +65,7 @@ export class ConflictError extends AppError {
   }
 }
 
-export function formatErrorResponse(error: any) {
+export function formatErrorResponse(error: any): FormattedErrorResponse {
   if (error instanceof AppError) {
     return {
       status: error.statusCode,
