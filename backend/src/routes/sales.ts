@@ -4,24 +4,24 @@ import { SaleService } from '../services/sale.service';
 
 export const saleRoutes = new Elysia({ prefix: '/sales' })
   .use(authMiddleware)
-  .get('/', async ({ query }) => {
-    const result = await SaleService.getAll(query as any);
+  .get('/', async ({ query }: any) => {
+    const result = await SaleService.getAll(query || {});
     return {
       data: result.data,
       meta: result.meta
     };
   })
-  .post('/', async ({ body, user, set }) => {
-    const sale = await SaleService.createSale(user.id, body as any);
+  .post('/', async ({ body, user, set }: any) => {
+    const sale = await SaleService.createSale(user.id, body || {});
     set.status = 201;
     return { data: sale };
   })
-  .get('/:id', async ({ params: { id } }) => {
+  .get('/:id', async ({ params: { id } }: any) => {
     const sale = await SaleService.getById(id);
     return { data: sale };
   })
-  .delete('/:id', async ({ params: { id }, user, set }) => {
-    requireAdmin(user.role);
+  .delete('/:id', async ({ params: { id }, user, set }: any) => {
+    requireAdmin(user?.role);
     await SaleService.delete(id);
     set.status = 204;
     return;

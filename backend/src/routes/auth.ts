@@ -1,4 +1,4 @@
-import { Elysia, t } from 'elysia';
+import { Elysia } from 'elysia';
 import { jwt } from '@elysiajs/jwt';
 import { AuthService } from '../services/auth.service';
 
@@ -9,8 +9,8 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
       secret: process.env.JWT_SECRET || 'sales-pos-dashboard-secret-key-2026'
     })
   )
-  .post('/login', async ({ body, jwt, set }) => {
-    const { email, username, password } = body as any;
+  .post('/login', async ({ body, jwt, set }: any) => {
+    const { email, username, password } = body || {};
     const identifier = email || username;
 
     const user = await AuthService.login(identifier, password);

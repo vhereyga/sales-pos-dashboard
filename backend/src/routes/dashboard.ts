@@ -8,7 +8,7 @@ export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
     const summary = await DashboardService.getSummary();
     return { data: summary };
   })
-  .get('/recent-sales', async ({ query }) => {
+  .get('/recent-sales', async ({ query }: any) => {
     const limit = query?.limit ? Number(query.limit) : 5;
     const recent = await DashboardService.getRecentSales(limit);
     return { data: recent };
