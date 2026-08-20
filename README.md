@@ -85,7 +85,7 @@ cd backend
 bun dev
 ```
 Backend REST API aktif pada `http://localhost:3000`
-Dokumentasi OpenAPI UI tersedia di `http://localhost:3000/openapi`
+Dokumentasi OpenAPI UI Interaktif tersedia di `http://localhost:3000/openapi`
 
 ### Terminal 2: Frontend Client
 ```bash
@@ -135,49 +135,112 @@ Menguji:
 
 ---
 
-## 📑 Spesifikasi REST API & Contoh Respons
+## 📑 DOKUMENTASI LENGKAP REST API
 
-### Endpoint Minimum
-- `POST /api/v1/auth/login` (Public) - Login user
-- `GET /health` (Public) - Health check API
-- `GET /api/v1/products` (Auth) - Daftar produk dengan pagination & search
-- `POST /api/v1/products` (Auth/Admin) - Tambah produk
-- `GET /api/v1/products/:id` (Auth) - Detail produk
-- `PATCH /api/v1/products/:id` (Auth/Admin) - Update produk
-- `DELETE /api/v1/products/:id` (Auth/Admin) - Soft delete / hapus produk
-- `GET /api/v1/customers` (Auth) - Daftar pelanggan
-- `POST /api/v1/customers` (Auth) - Tambah pelanggan
-- `GET /api/v1/customers/:id` (Auth) - Detail pelanggan
-- `PATCH /api/v1/customers/:id` (Auth) - Update pelanggan
-- `DELETE /api/v1/customers/:id` (Auth/Admin) - Hapus pelanggan
-- `GET /api/v1/sales` (Auth) - Daftar transaksi penjualan
-- `POST /api/v1/sales` (Auth) - Buat transaksi baru (hitung server + potong stok atomik)
-- `GET /api/v1/sales/:id` (Auth) - Detail transaksi & struk
-- `DELETE /api/v1/sales/:id` (Auth/Admin) - Hapus/void transaksi
-- `GET /api/v1/dashboard/summary` (Auth) - KPI total omset, transaksi, produk, & pelanggan
-- `GET /api/v1/dashboard/recent-sales` (Auth) - Transaksi penjualan terbaru
-- `GET /api/v1/dashboard/sales-trend` (Auth) - Data grafik tren penjualan harian
+Selain dokumentasi tertulis di bawah ini, Anda juga dapat mencoba seluruh endpoint secara langsung melalui **Interactive OpenAPI Docs** di browser pada URL: **`http://localhost:3000/openapi`**
 
-### Contoh Respons Sukses (`POST /api/v1/sales`)
+### Header Autentikasi
+Untuk endpoint yang membutuhkan autentikasi (`Auth`), sertakan token JWT pada HTTP Header:
+```http
+Authorization: Bearer <TOKEN_JWT_HASIL_LOGIN>
+Content-Type: application/json
+```
+
+---
+
+### 📌 Daftar Endpoint API
+
+| Method | Endpoint | Akses | Deskripsi |
+|---|---|---|---|
+| `POST` | `/api/v1/auth/login` | Public | Authenticate user & hasilkan JWT token |
+| `GET` | `/health` | Public | Pengecekan status kesehatan server API |
+| `GET` | `/api/v1/products` | Auth | Ambil daftar produk (Support query: `page`, `limit`, `search`, `isActive`) |
+| `POST` | `/api/v1/products` | Auth/Admin | Tambah produk baru ke katalog |
+| `GET` | `/api/v1/products/:id` | Auth | Ambil rincian detail produk berdasarkan ID |
+| `PATCH` | `/api/v1/products/:id` | Auth/Admin | Perbarui data produk (harga, stok, nama, status) |
+| `DELETE` | `/api/v1/products/:id` | Auth/Admin | Soft delete / hapus produk |
+| `GET` | `/api/v1/customers` | Auth | Ambil daftar pelanggan (Support query: `page`, `limit`, `search`) |
+| `POST` | `/api/v1/customers` | Auth | Tambah master pelanggan baru |
+| `GET` | `/api/v1/customers/:id` | Auth | Detail pelanggan berdasarkan ID |
+| `PATCH` | `/api/v1/customers/:id` | Auth | Perbarui data pelanggan |
+| `DELETE` | `/api/v1/customers/:id` | Auth/Admin | Hapus data pelanggan |
+| `GET` | `/api/v1/sales` | Auth | Ambil daftar transaksi penjualan (Support query: `page`, `limit`, `search`) |
+| `POST` | `/api/v1/sales` | Auth | Buat transaksi kasir POS baru (Hitung total server & potong stok atomik) |
+| `GET` | `/api/v1/sales/:id` | Auth | Detail transaksi penjualan & struk belanja |
+| `DELETE` | `/api/v1/sales/:id` | Auth/Admin | Void / hapus transaksi penjualan |
+| `GET` | `/api/v1/dashboard/summary` | Auth | Ambil KPI omset, jumlah transaksi, produk, & pelanggan |
+| `GET | `/api/v1/dashboard/recent-sales` | Auth | Ambil daftar transaksi terbaru (Limit 5) |
+| `GET` | `/api/v1/dashboard/sales-trend` | Auth | Ambil data agregasi grafik tren penjualan harian |
+
+---
+
+### 📝 Contoh Request & Response Format
+
+#### 1. Login User (`POST /api/v1/auth/login`)
+**Request Body**:
+```json
+{
+  "email": "admin@pos.com",
+  "password": "admin123"
+}
+```
+**Response Sukses (200 OK)**:
 ```json
 {
   "data": {
-    "id": "cmszk1abc0001p7cs",
-    "invoiceNo": "INV-20260819-4819",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "cmszk1abc0001",
+      "name": "Admin Utama",
+      "email": "admin@pos.com",
+      "role": "ADMIN"
+    }
+  }
+}
+```
+
+#### 2. Buat Transaksi POS (`POST /api/v1/sales`)
+**Request Body**:
+```json
+{
+  "customerId": "cust_123",
+  "items": [
+    { "productId": "prod_001", "quantity": 2 },
+    { "productId": "prod_002", "quantity": 1 }
+  ]
+}
+```
+**Response Sukses (201 Created)**:
+```json
+{
+  "data": {
+    "id": "sale_xyz789",
+    "invoiceNo": "INV-20260820-1001",
     "customerId": "cust_123",
-    "userId": "user_456",
-    "totalAmount": 1250000,
-    "createdAt": "2026-08-19T10:30:00.000Z",
+    "userId": "user_admin",
+    "totalAmount": 1750000,
+    "createdAt": "2026-08-20T21:30:00.000Z",
     "items": [
       {
         "id": "item_1",
-        "productId": "prod_789",
-        "quantity": 1,
+        "productId": "prod_001",
+        "quantity": 2,
         "unitPrice": 750000,
-        "subtotal": 750000,
+        "subtotal": 1500000,
         "product": {
           "sku": "SKU-001",
           "name": "Keyboard Mechanical RGB"
+        }
+      },
+      {
+        "id": "item_2",
+        "productId": "prod_002",
+        "quantity": 1,
+        "unitPrice": 250000,
+        "subtotal": 250000,
+        "product": {
+          "sku": "SKU-002",
+          "name": "Mouse Wireless Silent Click"
         }
       }
     ]
@@ -185,7 +248,7 @@ Menguji:
 }
 ```
 
-### Contoh Respons Error (`400 Bad Request`)
+#### 3. Contoh Respons Error Validasi Stok (`400 Bad Request`)
 ```json
 {
   "error": {
@@ -197,6 +260,16 @@ Menguji:
         "message": "Kuantitas melampaui stok"
       }
     ]
+  }
+}
+```
+
+#### 4. Contoh Respons Error Autentikasi (`401 Unauthorized`)
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Token autentikasi tidak valid atau kadaluarsa"
   }
 }
 ```
