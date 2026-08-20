@@ -11,12 +11,11 @@ describe('Integration Tests - Sales/POS Dashboard (TEST-I01..I12)', () => {
   let sampleCustomer: any;
 
   beforeAll(async () => {
-    // Reset test database and seed clean fixture
-    await prisma.saleItem.deleteMany();
-    await prisma.sale.deleteMany();
-    await prisma.customer.deleteMany();
-    await prisma.product.deleteMany();
-    await prisma.user.deleteMany();
+    // Safely delete only test-specific fixtures to preserve dev database catalog
+    await prisma.saleItem.deleteMany({ where: { product: { sku: { startsWith: 'TEST-' } } } });
+    await prisma.product.deleteMany({ where: { sku: { in: ['TEST-SKU-100', 'CRUD-SKU-001'] } } });
+    await prisma.customer.deleteMany({ where: { email: { in: ['customer@test.com', 'e2e@customer.com'] } } });
+    await prisma.user.deleteMany({ where: { email: { in: ['admintest@pos.com', 'stafftest@pos.com'] } } });
 
     const adminPassword = await bcrypt.hash('admin123', 10);
     const staffPassword = await bcrypt.hash('staff123', 10);
