@@ -23,8 +23,7 @@ The application features REST API backend service, interactive POS checkout term
 
 1. **Bun**: Installed on your development machine (`bun --version`).
 2. **PostgreSQL**: PostgreSQL server running on `localhost:5432`.
-   - Default Database Development: `sales_dashboard`
-   - Default Database Integration Test: `sales_dashboard_test`
+   - Database Name: `sales_dashboard`
 
 ---
 
@@ -51,7 +50,6 @@ bun install
 # Konfigurasi File Environment (.env)
 # Salin dari .env.example atau buat file .env:
 # DATABASE_URL="postgresql://postgres:PASSWORD@localhost:5432/sales_dashboard"
-# DATABASE_URL_TEST="postgresql://postgres:PASSWORD@localhost:5432/sales_dashboard_test"
 # JWT_SECRET="sales-pos-dashboard-secret-key-2026"
 # PORT=3000
 
@@ -120,11 +118,7 @@ Menguji:
 ### 2. Menjalankan Backend Integration Tests (TEST-I01 .. TEST-I12)
 ```bash
 cd backend
-# Persiapan schema pada database test terpisah
-$env:DATABASE_URL="postgresql://postgres:vhereyga123@localhost:5432/sales_dashboard_test"; bun run prisma db push
-
-# Eksekusi integration test
-$env:DATABASE_URL="postgresql://postgres:vhereyga123@localhost:5432/sales_dashboard_test"; bun test tests/integration
+bun test tests/integration
 ```
 Menguji:
 - `TEST-I01`: Auth login valid -> status 200 & JWT token returned.
