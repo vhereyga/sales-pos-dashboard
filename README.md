@@ -1,27 +1,31 @@
 # Sales / Point of Sale (POS) Dashboard
 
-A full-stack web application for sales and Point of Sale (POS) management built strictly according to the **Software Requirements Specification (SRS v1.0)**.
+Sistem manajemen penjualan dan kasir Point of Sale (POS) berbasis full-stack web yang dibangun sesuai dengan **Software Requirements Specification (SRS v1.0)**. Sistem ini menyediakan layanan REST API backend, terminal kasir POS interaktif, manajemen data master (katalog produk & pelanggan), grafik tren omset harian, autentikasi & otorisasi berbasis peran (Role-Based Access Control), serta pengujian otomatis (*unit & integration testing*).
 
-The application features REST API backend service, interactive POS checkout terminal, data management (CRUD products & customers), sales trend charts, authentication & authorization, and unit & integration testing.
+## Tech Stack
 
----
-
-## 🛠️ Stack Utama
-
-- **Backend Runtime**: Bun v1.3+
-- **Web Framework**: Elysia.js v1.4+
-- **Database**: PostgreSQL
-- **ORM**: Prisma ORM v5.22
-- **Frontend Framework**: React v18 + TypeScript (Vite)
-- **Styling**: Vanilla CSS (Modern Dark-Mode / Glassmorphism Design System)
-- **Charts**: Recharts
-- **Testing**: Bun Test (Unit Tests & Integration Tests)
+- **Backend:** Bun + Elysia.js v1.4+
+- **Frontend:** React v18 + TypeScript (menggunakan Vite)
+- **Database:** PostgreSQL
+- **ORM:** Prisma ORM v5.22
+- **Styling:** Vanilla CSS (Modern Dark-Mode & Glassmorphism Design System)
+- **Charts:** Recharts
+- **Testing:** Bun Test (Unit Testing & Integration Testing)
 
 ---
 
-## 📖 PANDUAN LENGKAP SETUP & RUN DARI `GIT CLONE` (FOR REVIEWER)
+## Prerequisites
 
-Panduan ini disusun secara berurutan tanpa langkah tersembunyi agar penguji/mentor dapat menjalankan proyek ini dari kondisi *clean checkout*.
+Untuk menjalankan proyek ini di lingkungan lokal Anda, pastikan telah ter-install:
+
+- [Bun](https://bun.sh/) (sebagai *runtime* & *package manager* backend & test runner, v1.3+)
+- [Node.js](https://nodejs.org/) / npm / Bun (untuk frontend)
+- [PostgreSQL](https://www.postgresql.org/) (server database lokal running di port 5432)
+- Git
+
+---
+
+## Installation / Setup
 
 ### 1. Clone Repositori
 ```bash
@@ -29,226 +33,230 @@ git clone https://github.com/USERNAME/sales-pos-dashboard.git
 cd sales-pos-dashboard
 ```
 
-### 2. Prasyarat Sistem
-- **Bun** runtime terinstal (`bun --version`).
-- **PostgreSQL** server berjalan aktif pada `localhost:5432`.
-- Buat database PostgreSQL bernama `sales_dashboard` (misal via pgAdmin atau psql: `CREATE DATABASE sales_dashboard;`).
+### 2. Setup Backend
+```bash
+cd backend
+bun install
+```
+
+### 3. Setup Frontend
+```bash
+cd ../frontend
+bun install
+```
 
 ---
 
-### 3. Setup & Menjalankan Backend API
+## Environment Variables
 
-Buka terminal di folder root project:
+Proyek ini menggunakan *environment variables* untuk mengamankan kredensial database dan rahasia JWT.
+
+### Backend Environment (`backend/.env`)
+Buat file `.env` di dalam direktori `backend/`:
+```env
+DATABASE_URL="postgresql://postgres:PASSWORD_POSTGRES_ANDA@localhost:5432/sales_dashboard"
+JWT_SECRET="sales-pos-dashboard-secret-key-2026"
+PORT=3000
+```
+
+### Frontend Environment (`frontend/.env`)
+Buat file `.env` di dalam direktori `frontend/` (opsional):
+```env
+VITE_API_URL=http://localhost:3000/api/v1
+```
+
+---
+
+## PostgreSQL & Prisma Setup
+
+1. Pastikan layanan PostgreSQL lokal di PC Anda telah berjalan.
+2. Buat satu database kosong untuk proyek ini bernama `sales_dashboard` (misalnya via pgAdmin atau `psql` command: `CREATE DATABASE sales_dashboard;`).
+3. Sesuaikan `DATABASE_URL` pada file `backend/.env` dengan kata sandi PostgreSQL Anda.
+4. Jalankan perintah sinkronisasi schema dan pengisian data awal (*seeding*) di dalam direktori `backend/`:
 
 ```bash
-# 1. Masuk ke direktori backend
 cd backend
 
-# 2. Buat file .env (Salin dari .env.example)
-# Sesuaikan PASSWORD postgres Anda di file .env:
-# DATABASE_URL="postgresql://postgres:PASSWORD_POSTGRES_ANDA@localhost:5432/sales_dashboard"
-# JWT_SECRET="sales-pos-dashboard-secret-key-2026"
-# PORT=3000
-
-# 3. Instalasi dependency backend
-bun install
-
-# 4. Sinkronisasi schema Prisma ke database PostgreSQL
+# Sinkronisasi schema Prisma ke PostgreSQL (pembuatan tabel otomatis)
 bun run prisma db push
 
-# 5. Jalankan seed data demo awal (User, Produk, Pelanggan, & Histori Transaksi)
+# Generate Prisma Client
+bunx prisma generate
+
+# Jalankan Seeding Data Demo (User Admin/Staff, Katalog Produk, Pelanggan, Histori Penjualan)
 bun run seed
-
-# 6. Jalankan Backend Server
-bun dev
 ```
-
-- Backend REST API aktif di: **`http://localhost:3000`**
-- Dokumentasi OpenAPI UI Interaktif aktif di: **`http://localhost:3000/openapi`**
 
 ---
 
-### 4. Setup & Menjalankan Frontend Web
+## Running the Application
 
-Buka **terminal baru** (Terminal 2) dari root project:
+Jalankan aplikasi dengan menggunakan dua terminal terpisah dari root project:
 
+### Terminal 1 → Backend API Server
 ```bash
-# 1. Masuk ke direktori frontend
-cd frontend
-
-# 2. Instalasi dependency frontend
-bun install
-
-# 3. Jalankan Frontend Server
+cd backend
 bun dev
 ```
+- API REST Server berjalan pada: `http://localhost:3000`
+- Dokumentasi OpenAPI UI Interaktif berjalan pada: `http://localhost:3000/openapi`
 
-- Aplikasi web frontend aktif di: **`http://localhost:5173`**
+### Terminal 2 → Frontend Web Client
+```bash
+cd frontend
+bun dev
+```
+- Aplikasi Web POS berjalan pada: `http://localhost:5173`
 
 ---
 
-### 5. Login & Pengujian Akses Demo
+## Kredensial Demo
 
-Buka browser Anda ke **`http://localhost:5173`** dan gunakan kredensial demo berikut (atau klik tombol *Quick Fill* pada halaman login):
+Buka browser ke `http://localhost:5173` dan masuk menggunakan akun berikut (tersedia juga tombol *Quick Fill* pada halaman login):
 
 | Peran (Role) | Email | Password | Hak Akses |
 |---|---|---|---|
 | **ADMIN** | `admin@pos.com` | `admin123` | Akses penuh (CRUD Produk, Pelanggan, Sales, Soft Delete) |
-| **STAFF** | `staff@pos.com` | `staff123` | Akses operator (Lihat Katalog, Buat Transaksi POS) |
+| **STAFF** | `staff@pos.com` | `staff123` | Akses operator (Lihat Katalog, Buat Transaksi POS Kasir) |
 
 ---
 
-### 6. Menjalankan Automated Test Suite
+## Project Structure
 
-Untuk memverifikasi unit test dan integration test:
-
-```bash
-cd backend
-
-# Menjalankan Unit Tests (18 Pass)
-bun test tests/unit
-
-# Menjalankan Integration Tests (11 Pass)
-bun test tests/integration
-
-# Menjalankan Seluruh Test Suite (29 Pass)
-bun test
+```text
+sales-pos-dashboard/
+├── backend/
+│   ├── prisma/             # Schema & Seed Script (schema.prisma, seed.ts)
+│   ├── src/
+│   │   ├── middleware/     # Middleware Auth JWT & Otorisasi Role
+│   │   ├── routes/         # Endpoint API (auth, products, customers, sales, dashboard)
+│   │   ├── services/       # Logic Bisnis (Auth, Product, Customer, Sale, Dashboard)
+│   │   ├── utils/          # Utility Helpers (validators, pagination, errors, auth)
+│   │   ├── app.ts          # Setup Utama Elysia.js & Middleware Error
+│   │   └── index.ts        # Entry point Server Backend
+│   ├── tests/
+│   │   ├── unit/           # Unit Test (unit.test.ts)
+│   │   └── integration/    # Integration Test (integration.test.ts)
+│   ├── .env                # Environment Variables Backend
+│   └── package.json        # Dependensi & Scripts Backend
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # UI Components (Navbar, Sidebar, StatCard, InvoiceModal)
+│   │   ├── context/        # Context API (AuthContext.tsx)
+│   │   ├── pages/          # Halaman Web (LoginPage, DashboardPage, ProductsPage, POS)
+│   │   ├── services/       # Client API Service (api.ts)
+│   │   └── types/          # TypeScript Type Definitions
+│   └── package.json        # Dependensi & Scripts Frontend
+├── PRESENTASI_PROJECT.txt   # Cheat Sheet Presentasi Proyek
+└── README.md
 ```
 
 ---
 
-## 📑 DOKUMENTASI LENGKAP REST API
+## API Documentation & Endpoints
 
-Selain dokumentasi OpenAPI UI di `http://localhost:3000/openapi`, berikut adalah rincian API:
+Selain dokumentasi interaktif OpenAPI UI di `http://localhost:3000/openapi`, berikut daftar spesifikasi endpoint REST API:
 
-### Header Autentikasi
-Untuk endpoint yang membutuhkan autentikasi (`Auth`), sertakan token JWT pada HTTP Header:
+### Authentication Header
+Sertakan token JWT pada setiap permintaan API yang membutuhkan autentikasi:
 ```http
 Authorization: Bearer <TOKEN_JWT_HASIL_LOGIN>
 Content-Type: application/json
 ```
 
-### 📌 Daftar Endpoint API
+### Endpoints Table
 
 | Method | Endpoint | Akses | Deskripsi |
 |---|---|---|---|
-| `POST` | `/api/v1/auth/login` | Public | Authenticate user & hasilkan JWT token |
-| `GET` | `/health` | Public | Pengecekan status kesehatan server API |
-| `GET` | `/api/v1/products` | Auth | Ambil daftar produk (Support query: `page`, `limit`, `search`, `isActive`) |
-| `POST` | `/api/v1/products` | Auth/Admin | Tambah produk baru ke katalog |
-| `GET` | `/api/v1/products/:id` | Auth | Ambil rincian detail produk berdasarkan ID |
-| `PATCH` | `/api/v1/products/:id` | Auth/Admin | Perbarui data produk (harga, stok, nama, status) |
-| `DELETE` | `/api/v1/products/:id` | Auth/Admin | Soft delete / hapus produk |
-| `GET` | `/api/v1/customers` | Auth | Ambil daftar pelanggan (Support query: `page`, `limit`, `search`) |
-| `POST` | `/api/v1/customers` | Auth | Tambah master pelanggan baru |
-| `GET` | `/api/v1/customers/:id` | Auth | Detail pelanggan berdasarkan ID |
+| `POST` | `/api/v1/auth/login` | Public | Login pengguna & mendapatkan token JWT |
+| `GET` | `/health` | Public | Pengecekan status server |
+| `GET` | `/api/v1/products` | Auth | Ambil katalog produk (Support query: `page`, `limit`, `search`, `isActive`) |
+| `POST` | `/api/v1/products` | Auth/Admin | Tambah produk baru |
+| `GET` | `/api/v1/products/:id` | Auth | Detail rincian produk |
+| `PATCH` | `/api/v1/products/:id` | Auth/Admin | Perbarui data produk (harga, stok, nama) |
+| `DELETE` | `/api/v1/products/:id` | Auth/Admin | Soft delete / nonaktifkan produk |
+| `GET` | `/api/v1/customers` | Auth | Daftar pelanggan (Support query: `page`, `limit`, `search`) |
+| `POST` | `/api/v1/customers` | Auth | Tambah data pelanggan |
+| `GET` | `/api/v1/customers/:id` | Auth | Detail pelanggan |
 | `PATCH` | `/api/v1/customers/:id` | Auth | Perbarui data pelanggan |
-| `DELETE` | `/api/v1/customers/:id` | Auth/Admin | Hapus data pelanggan |
-| `GET` | `/api/v1/sales` | Auth | Ambil daftar transaksi penjualan (Support query: `page`, `limit`, `search`) |
-| `POST` | `/api/v1/sales` | Auth | Buat transaksi kasir POS baru (Hitung total server & potong stok atomik) |
-| `GET` | `/api/v1/sales/:id` | Auth | Detail transaksi penjualan & struk belanja |
-| `DELETE` | `/api/v1/sales/:id` | Auth/Admin | Void / hapus transaksi penjualan |
-| `GET` | `/api/v1/dashboard/summary` | Auth | Ambil KPI omset, jumlah transaksi, produk, & pelanggan |
-| `GET` | `/api/v1/dashboard/recent-sales` | Auth | Ambil daftar transaksi terbaru (Limit 5) |
-| `GET` | `/api/v1/dashboard/sales-trend` | Auth | Ambil data agregasi grafik tren penjualan harian |
+| `DELETE` | `/api/v1/customers/:id` | Auth/Admin | Hapus pelanggan |
+| `GET` | `/api/v1/sales` | Auth | Daftar histori transaksi penjualan |
+| `POST` | `/api/v1/sales` | Auth | Buat transaksi POS baru (Kalkulasi server & potong stok atomik) |
+| `GET` | `/api/v1/sales/:id` | Auth | Detail transaksi & cetak struk belanja |
+| `DELETE` | `/api/v1/sales/:id` | Auth/Admin | Hapus/void transaksi penjualan |
+| `GET` | `/api/v1/dashboard/summary` | Auth | Ambil KPI omset, total transaksi, produk, & pelanggan |
+| `GET` | `/api/v1/dashboard/recent-sales` | Auth | Ambil transaksi terbaru (Limit 5) |
+| `GET` | `/api/v1/dashboard/sales-trend` | Auth | Data grafik tren omset harian |
 
 ---
 
-### 📝 Contoh Request & Response Format
+## Error Handling
 
-#### 1. Login User (`POST /api/v1/auth/login`)
-**Request Body**:
-```json
-{
-  "email": "admin@pos.com",
-  "password": "admin123"
-}
-```
-**Response Sukses (200 OK)**:
-```json
-{
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "user": {
-      "id": "cmszk1abc0001",
-      "name": "Admin Utama",
-      "email": "admin@pos.com",
-      "role": "ADMIN"
-    }
-  }
-}
-```
+Aplikasi ini menggunakan format respons HTTP JSON yang terstandarisasi untuk menangani berbagai skenario error secara aman tanpa membocorkan detail internal server.
 
-#### 2. Buat Transaksi POS (`POST /api/v1/sales`)
-**Request Body**:
-```json
-{
-  "customerId": "cust_123",
-  "items": [
-    { "productId": "prod_001", "quantity": 2 },
-    { "productId": "prod_002", "quantity": 1 }
-  ]
-}
-```
-**Response Sukses (201 Created)**:
-```json
-{
-  "data": {
-    "id": "sale_xyz789",
-    "invoiceNo": "INV-20260820-1001",
-    "customerId": "cust_123",
-    "userId": "user_admin",
-    "totalAmount": 1750000,
-    "createdAt": "2026-08-20T21:30:00.000Z",
-    "items": [
-      {
-        "id": "item_1",
-        "productId": "prod_001",
-        "quantity": 2,
-        "unitPrice": 750000,
-        "subtotal": 1500000,
-        "product": {
-          "sku": "SKU-001",
-          "name": "Keyboard Mechanical RGB"
-        }
-      },
-      {
-        "id": "item_2",
-        "productId": "prod_002",
-        "quantity": 1,
-        "unitPrice": 250000,
-        "subtotal": 250000,
-        "product": {
-          "sku": "SKU-002",
-          "name": "Mouse Wireless Silent Click"
-        }
-      }
-    ]
-  }
-}
-```
-
-#### 3. Contoh Respons Error Validasi Stok (`400 Bad Request`)
+### Standard Error Response Format
 ```json
 {
   "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Stok produk \"Keyboard Mechanical RGB\" tidak mencukupi. Stok tersedia: 2, diminta: 5",
+    "code": "ERROR_CODE",
+    "message": "Pesan deskripsi error yang ramah pengguna",
     "details": [
       {
-        "field": "quantity",
-        "message": "Kuantitas melampaui stok"
+        "field": "nama_field",
+        "message": "Detail kegagalan validasi"
       }
     ]
   }
 }
 ```
 
+### HTTP Status Codes:
+- `200 OK` / `201 Created` / `204 No Content`: Permintaan berhasil diproses.
+- `400 Bad Request` (`VALIDATION_ERROR`): Data input tidak valid (misal: stok produk tidak cukup, harga negatif, quantity <= 0).
+- `401 Unauthorized` (`UNAUTHORIZED`): Token JWT tidak ada, tidak valid, atau kadaluarsa.
+- `403 Forbidden` (`FORBIDDEN`): Pengguna tidak memiliki hak akses role yang sesuai (misal: Staff mencoba menghapus produk).
+- `404 Not Found` (`NOT_FOUND`): Resource ID yang diminta tidak ditemukan di database.
+- `409 Conflict` (`CONFLICT_ERROR`): Terjadi duplikasi data unik (misal: SKU produk sudah digunakan).
+- `500 Internal Server Error` (`INTERNAL_SERVER_ERROR`): Kegagalan sistem server.
+
 ---
 
-## 📐 Arsitektur & Keputusan Desain
+## Troubleshooting
 
-1. **Client-Server Separation**: Frontend React + TypeScript sepenuhnya decoupled dari Backend Elysia.js REST API.
-2. **Server-side Calculation**: Subtotal item dan grand total transaksi dihitung murni oleh backend server, tidak pernah mempercayai angka dari client.
-3. **Database Transaction Atomicity**: Pembuatan header sale, item sale, dan pengurangan stok produk dijalankan dalam satu blok `prisma.$transaction` untuk menjamin keandalan ACID (tidak ada partial write).
-4. **Soft Delete Policy**: Produk yang telah terikat dengan transaksi histori tidak akan dihapus keras dari database, melainkan dinonaktifkan (`isActive = false`) untuk menjaga referential integrity.
+### 1. Database Connection Error (Prisma / PostgreSQL)
+Jika saat `bun run prisma db push` atau `bun dev` muncul error koneksi:
+- Pastikan server *PostgreSQL* lokal sudah aktif (Port 5432).
+- Buka file `backend/.env` dan pastikan kredensial `DATABASE_URL` (username, password, port, dan nama database `sales_dashboard`) sudah sesuai.
+- Jalankan pengecekan skema dengan: `bunx prisma validate` di folder `backend/`.
+
+### 2. API Connection Error pada Frontend
+- Pastikan terminal backend (`bun dev` di folder `backend`) tetap berjalan.
+- Periksa konsol browser (F12 -> Network). Jika API URL berbeda, sesuaikan `VITE_API_URL` pada file `frontend/.env`.
+
+### 3. Error Foreign Key Constraint Saat Testing
+- Pengujian integrasi sudah dikonfigurasi untuk menghapus data berelasi secara berurutan. Jalankan pengujian langsung dengan: `bun test` di direktori `backend/`.
+
+---
+
+## Automated Testing
+
+Proyek ini dilengkapi dengan pengujian otomatis lengkap menggunakan **Bun Test** (Total **29 Test Cases - 100% PASS**):
+
+### Menjalankan Pengujian
+
+```bash
+cd backend
+
+# 1. Menjalankan Unit Tests (18 Pass)
+bun test tests/unit
+
+# 2. Menjalankan Integration Tests (11 Pass)
+bun test tests/integration
+
+# 3. Menjalankan Seluruh Test Suite (29 Pass)
+bun test
+```
+
+### Cakupan Test Cases:
+- **Unit Testing (18 Tests)**: Validasi input produk, validasi sale item, kalkulasi subtotal/grand total, aturan stok, pagination metadata, error mapping, dan hashing password.
+- **Integration Testing (11 Tests)**: Alur API -> Prisma -> PostgreSQL (Login auth, proteksi 401, CRUD produk, SKU duplikat 409, CRUD pelanggan, transaksi POS atomik + pemotongan stok, rollback transaksi saat stok kurang, 404 handler, dan sanitasi error DB).
