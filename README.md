@@ -19,125 +19,107 @@ The application features REST API backend service, interactive POS checkout term
 
 ---
 
-## 🚀 Prasyarat Sistem
+## 📖 PANDUAN LENGKAP SETUP & RUN DARI `GIT CLONE` (FOR REVIEWER)
 
-1. **Bun**: Installed on your development machine (`bun --version`).
-2. **PostgreSQL**: PostgreSQL server running on `localhost:5432`.
-   - Database Name: `sales_dashboard`
+Panduan ini disusun secara berurutan tanpa langkah tersembunyi agar penguji/mentor dapat menjalankan proyek ini dari kondisi *clean checkout*.
+
+### 1. Clone Repositori
+```bash
+git clone https://github.com/USERNAME/sales-pos-dashboard.git
+cd sales-pos-dashboard
+```
+
+### 2. Prasyarat Sistem
+- **Bun** runtime terinstal (`bun --version`).
+- **PostgreSQL** server berjalan aktif pada `localhost:5432`.
+- Buat database PostgreSQL bernama `sales_dashboard` (misal via pgAdmin atau psql: `CREATE DATABASE sales_dashboard;`).
 
 ---
 
-## 🔑 Credential Demo
+### 3. Setup & Menjalankan Backend API
 
-| Peran (Role) | Email | Password | Izin Akses |
+Buka terminal di folder root project:
+
+```bash
+# 1. Masuk ke direktori backend
+cd backend
+
+# 2. Buat file .env (Salin dari .env.example)
+# Sesuaikan PASSWORD postgres Anda di file .env:
+# DATABASE_URL="postgresql://postgres:PASSWORD_POSTGRES_ANDA@localhost:5432/sales_dashboard"
+# JWT_SECRET="sales-pos-dashboard-secret-key-2026"
+# PORT=3000
+
+# 3. Instalasi dependency backend
+bun install
+
+# 4. Sinkronisasi schema Prisma ke database PostgreSQL
+bun run prisma db push
+
+# 5. Jalankan seed data demo awal (User, Produk, Pelanggan, & Histori Transaksi)
+bun run seed
+
+# 6. Jalankan Backend Server
+bun dev
+```
+
+- Backend REST API aktif di: **`http://localhost:3000`**
+- Dokumentasi OpenAPI UI Interaktif aktif di: **`http://localhost:3000/openapi`**
+
+---
+
+### 4. Setup & Menjalankan Frontend Web
+
+Buka **terminal baru** (Terminal 2) dari root project:
+
+```bash
+# 1. Masuk ke direktori frontend
+cd frontend
+
+# 2. Instalasi dependency frontend
+bun install
+
+# 3. Jalankan Frontend Server
+bun dev
+```
+
+- Aplikasi web frontend aktif di: **`http://localhost:5173`**
+
+---
+
+### 5. Login & Pengujian Akses Demo
+
+Buka browser Anda ke **`http://localhost:5173`** dan gunakan kredensial demo berikut (atau klik tombol *Quick Fill* pada halaman login):
+
+| Peran (Role) | Email | Password | Hak Akses |
 |---|---|---|---|
-| **ADMIN** | `admin@pos.com` | `admin123` | Akses penuh (CRUD Produk, Pelanggan, Sales, Hapus Data) |
+| **ADMIN** | `admin@pos.com` | `admin123` | Akses penuh (CRUD Produk, Pelanggan, Sales, Soft Delete) |
 | **STAFF** | `staff@pos.com` | `staff123` | Akses operator (Lihat Katalog, Buat Transaksi POS) |
 
 ---
 
-## ⚙️ Langkah Inisialisasi & Setup Project
+### 6. Menjalankan Automated Test Suite
 
-### 1. Backend Setup & Database Migration
+Untuk memverifikasi unit test dan integration test:
 
 ```bash
-# Pindah ke direktori backend
 cd backend
 
-# Instalasi dependencies (opsional jika sudah ada node_modules)
-bun install
-
-# Konfigurasi File Environment (.env)
-# Salin dari .env.example atau buat file .env:
-# DATABASE_URL="postgresql://postgres:PASSWORD@localhost:5432/sales_dashboard"
-# JWT_SECRET="sales-pos-dashboard-secret-key-2026"
-# PORT=3000
-
-# Push Schema Prisma ke PostgreSQL Development
-bun run prisma db push
-
-# Menjalankan Database Seed (Memasukkan data demo awal)
-bun run seed
-```
-
-### 2. Frontend Setup
-
-```bash
-# Pindah ke direktori frontend
-cd ../frontend
-
-# Konfigurasi File Environment (.env)
-# VITE_API_URL=http://localhost:3000/api/v1
-
-# Instalasi dependencies (opsional)
-bun install
-```
-
----
-
-## 💻 Cara Menjalankan Aplikasi
-
-Buka dua terminal dari root project:
-
-### Terminal 1: Backend Server
-```bash
-cd backend
-bun dev
-```
-Backend REST API aktif pada `http://localhost:3000`
-Dokumentasi OpenAPI UI Interaktif tersedia di `http://localhost:3000/openapi`
-
-### Terminal 2: Frontend Client
-```bash
-cd frontend
-bun dev
-```
-Buka browser ke `http://localhost:5173`
-
----
-
-## 🧪 Pengujian (Unit Testing & Integration Testing)
-
-Seluruh test suite dikembangkan secara independen tanpa ketergantungan manual.
-
-### 1. Menjalankan Backend Unit Tests (TEST-U01 .. TEST-U08)
-```bash
-cd backend
+# Menjalankan Unit Tests (18 Pass)
 bun test tests/unit
-```
-Menguji:
-- `TEST-U01`: Validasi produk (harga negatif, stok negatif, SKU kosong ditolak).
-- `TEST-U02`: Validasi sale item (quantity <= 0 ditolak).
-- `TEST-U03`: Kalkulasi subtotal (`quantity * unitPrice`).
-- `TEST-U04`: Kalkulasi grand total (penjumlahan subtotal).
-- `TEST-U05`: Business rule stok (`requestedQty > currentStock` melempar error).
-- `TEST-U06`: Pagination default page/limit & batas maksimum 100.
-- `TEST-U07`: Error mapping ke format JSON konsisten.
-- `TEST-U08`: Password hash & verify helper.
 
-### 2. Menjalankan Backend Integration Tests (TEST-I01 .. TEST-I12)
-```bash
-cd backend
+# Menjalankan Integration Tests (11 Pass)
 bun test tests/integration
+
+# Menjalankan Seluruh Test Suite (29 Pass)
+bun test
 ```
-Menguji:
-- `TEST-I01`: Auth login valid -> status 200 & JWT token returned.
-- `TEST-I02`: Auth login invalid -> status 401.
-- `TEST-I03`: Endpoint terproteksi tanpa auth header -> status 401.
-- `TEST-I04`: Alur CRUD Produk (POST -> GET -> PATCH -> DELETE).
-- `TEST-I05`: SKU duplikat constraint -> status 409 Conflict Error.
-- `TEST-I06`: Alur CRUD Pelanggan end-to-end.
-- `TEST-I07`: Pembuatan Sale menyimpan header + items & memotong stok di database secara atomik.
-- `TEST-I08`: Penolakan transaksi saat stok tidak mencukupi & rollback transaksi database.
-- `TEST-I09`: Dashboard summary KPI sesuai data di database fixture.
-- `TEST-I10`: Not found handler -> status 404.
-- `TEST-I11 & TEST-I12`: Database error handling aman tanpa membocorkan stack trace sensitif & rollback transaksi.
 
 ---
 
 ## 📑 DOKUMENTASI LENGKAP REST API
 
-Selain dokumentasi tertulis di bawah ini, Anda juga dapat mencoba seluruh endpoint secara langsung melalui **Interactive OpenAPI Docs** di browser pada URL: **`http://localhost:3000/openapi`**
+Selain dokumentasi OpenAPI UI di `http://localhost:3000/openapi`, berikut adalah rincian API:
 
 ### Header Autentikasi
 Untuk endpoint yang membutuhkan autentikasi (`Auth`), sertakan token JWT pada HTTP Header:
@@ -145,8 +127,6 @@ Untuk endpoint yang membutuhkan autentikasi (`Auth`), sertakan token JWT pada HT
 Authorization: Bearer <TOKEN_JWT_HASIL_LOGIN>
 Content-Type: application/json
 ```
-
----
 
 ### 📌 Daftar Endpoint API
 
@@ -169,7 +149,7 @@ Content-Type: application/json
 | `GET` | `/api/v1/sales/:id` | Auth | Detail transaksi penjualan & struk belanja |
 | `DELETE` | `/api/v1/sales/:id` | Auth/Admin | Void / hapus transaksi penjualan |
 | `GET` | `/api/v1/dashboard/summary` | Auth | Ambil KPI omset, jumlah transaksi, produk, & pelanggan |
-| `GET | `/api/v1/dashboard/recent-sales` | Auth | Ambil daftar transaksi terbaru (Limit 5) |
+| `GET` | `/api/v1/dashboard/recent-sales` | Auth | Ambil daftar transaksi terbaru (Limit 5) |
 | `GET` | `/api/v1/dashboard/sales-trend` | Auth | Ambil data agregasi grafik tren penjualan harian |
 
 ---
@@ -260,16 +240,6 @@ Content-Type: application/json
         "message": "Kuantitas melampaui stok"
       }
     ]
-  }
-}
-```
-
-#### 4. Contoh Respons Error Autentikasi (`401 Unauthorized`)
-```json
-{
-  "error": {
-    "code": "UNAUTHORIZED",
-    "message": "Token autentikasi tidak valid atau kadaluarsa"
   }
 }
 ```
