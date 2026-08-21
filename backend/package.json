@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "bun run src/index.ts",
+    "start": "bun run src/index.ts",
     "seed": "bun run prisma/seed.ts",
     "test:unit": "bun test tests/unit",
     "test:integration": "bun test tests/integration",
