@@ -17,6 +17,9 @@ export const Sidebar: React.FC = () => {
     { path: '/sales', label: 'Penjualan / POS', icon: ShoppingCart }
   ];
 
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+  const openApiUrl = apiBase.replace(/\/api\/v1\/?$/, '') + '/openapi';
+
   return (
     <aside className="sidebar">
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', padding: '0 0.5rem' }}>
@@ -66,7 +69,7 @@ export const Sidebar: React.FC = () => {
 
       <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
         <a
-          href="http://localhost:3000/openapi"
+          href={openApiUrl}
           target="_blank"
           rel="noreferrer"
           className="btn btn-secondary"
