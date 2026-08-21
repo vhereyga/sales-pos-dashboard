@@ -29,7 +29,7 @@ Untuk menjalankan proyek ini di lingkungan lokal Anda, pastikan telah ter-instal
 
 ### 1. Clone Repositori
 ```bash
-git clone https://github.com/USERNAME/sales-pos-dashboard.git
+git clone https://github.com/vhereyga/sales-pos-dashboard.git
 cd sales-pos-dashboard
 ```
 
@@ -238,11 +238,11 @@ Jika saat `bun run prisma db push` atau `bun dev` muncul error koneksi:
 
 ---
 
-## Automated Testing
+## Automated Testing & Results
 
 Proyek ini dilengkapi dengan pengujian otomatis lengkap menggunakan **Bun Test** (Total **29 Test Cases - 100% PASS**):
 
-### Menjalankan Pengujian
+### 1. Perintah Menjalankan Pengujian
 
 ```bash
 cd backend
@@ -257,6 +257,63 @@ bun test tests/integration
 bun test
 ```
 
-### Cakupan Test Cases:
-- **Unit Testing (18 Tests)**: Validasi input produk, validasi sale item, kalkulasi subtotal/grand total, aturan stok, pagination metadata, error mapping, dan hashing password.
-- **Integration Testing (11 Tests)**: Alur API -> Prisma -> PostgreSQL (Login auth, proteksi 401, CRUD produk, SKU duplikat 409, CRUD pelanggan, transaksi POS atomik + pemotongan stok, rollback transaksi saat stok kurang, 404 handler, dan sanitasi error DB).
+### 2. Hasil Eksekusi Unit Testing (18 Pass, 0 Fail)
+
+```text
+bun test v1.3.14 (0d9b296a)
+
+tests/unit/unit.test.ts:
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U01: Validasi produk > harus menolak produk jika harga negatif
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U01: Validasi produk > harus menolak produk jika stok negatif
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U01: Validasi produk > harus menolak produk jika SKU kosong
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U01: Validasi produk > harus me-return objek tervalidasi jika data benar
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U02: Validasi sale item > harus menolak item jika quantity <= 0
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U02: Validasi sale item > harus menerima item jika quantity >= 1
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U03: Kalkulasi subtotal > harus menghitung subtotal = quantity * unitPrice secara tepat
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U03: Kalkulasi subtotal > harus menangani desimal harga dengan tepat
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U04: Kalkulasi grand total > harus menjumlahkan seluruh subtotal item
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U05: Business rule stok > harus melempar error jika requested quantity > current stock
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U05: Business rule stok > tidak melempar error jika stok mencukupi
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U06: Utility pagination > harus menggunakan default page=1 dan limit=10 jika parameter tidak diberikan
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U06: Utility pagination > harus membatasi limit maksimal 100
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U06: Utility pagination > harus menyusun paginated result metadata dengan benar
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U07: Error mapping > harus memetakan AppError ke format respons JSON standar
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U07: Error mapping > harus memetakan ValidationError dengan details
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U08: Auth helper > harus me-hash dan memverifikasi password dengan benar
+✓ Unit Tests - Sales/POS Dashboard (TEST-U01..U08) > TEST-U08: Auth helper > harus menolak password kurang dari 6 karakter saat hashing
+
+ 18 pass
+ 0 fail
+ 36 expect() calls
+Ran 18 tests across 1 file.
+```
+
+### 3. Hasil Eksekusi Integration Testing (11 Pass, 0 Fail)
+
+```text
+bun test v1.3.14 (0d9b296a)
+
+tests/integration/integration.test.ts:
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I01: Auth - Login valid mengembalikan 200 & token
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I02: Auth - Login password salah mengembalikan 401
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I03: Authorization - Endpoint terproteksi tanpa token mengembalikan 401
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I04: Products CRUD - POST -> GET -> PATCH -> DELETE
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I05: SKU Duplikat - Mengembalikan 409 conflict error
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I06: Customers CRUD - Alur CRUD pelanggan end-to-end
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I07: Create Sale - Menyimpan sale header + items dan mengurangi stok produk di DB
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I08: Insufficient Stock - Sale ditolak dan database tidak mengalami partial write
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I09: Dashboard Summary - KPI sesuai data di database
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I10: Not Found - GET ke ID yang tidak ada mengembalikan 404
+✓ Integration Tests - Sales/POS Dashboard (TEST-I01..I12) > TEST-I11 & TEST-I12: Database Error & Rollback - Tanggapan error aman dan tanpa kebocoran stack trace
+
+ 11 pass
+ 0 fail
+ 35 expect() calls
+Ran 11 tests across 1 file.
+```
+
+### 4. Ringkasan Total Test Suite
+- **Total Test Cases**: `29 Tests`
+- **Unit Test Cases**: `18 Tests (100% Pass)`
+- **Integration Test Cases**: `11 Tests (100% Pass)`
+- **Pass Rate**: `100% (29 Pass, 0 Fail)`
