@@ -14,110 +14,169 @@ Sistem manajemen penjualan dan kasir Point of Sale (POS) berbasis full-stack web
 
 ---
 
-## Prerequisites
+## 🚀 Tutorial / Panduan Menjalankan Projek secara Lokal
 
-Untuk menjalankan proyek ini di lingkungan lokal Anda, pastikan telah ter-install:
-
-- [Bun](https://bun.sh/) (sebagai *runtime* & *package manager* backend & test runner, v1.3+)
-- [Node.js](https://nodejs.org/) / npm / Bun (untuk frontend)
-- [PostgreSQL](https://www.postgresql.org/) (server database lokal running di port 5432)
-- Git
+Berikut adalah tutorial langkah-demi-langkah (*step-by-step*) lengkap untuk mengunduh, mengonfigurasi, dan menjalankan aplikasi **Sales / POS Dashboard** di komputer lokal Anda.
 
 ---
 
-## Installation / Setup
+### Langkah 1: Prasyarat Sistem (Prerequisites)
 
-### 1. Clone Repositori
+Sebelum memulai, pastikan perangkat lokal Anda telah ter-install dependensi berikut:
+
+1. **[Bun Runtime](https://bun.sh/)** (v1.3+ direkomendasikan)
+   - Digunakan sebagai *runtime* backend, *package manager*, dan *test runner*.
+   - Cek versi: `bun -v`
+2. **[Node.js](https://nodejs.org/) & npm** (opsional / alternatif frontend)
+   - Digunakan jika ingin menjalankan frontend dengan Node/npm alih-alih Bun.
+   - Cek versi: `node -v`
+3. **[PostgreSQL Database Server](https://www.postgresql.org/)**
+   - Server database PostgreSQL lokal yang aktif di port default `5432`.
+4. **Git**
+   - Untuk mengklon repositori proyek.
+
+---
+
+### Langkah 2: Clone Repositori
+
+Buka terminal / command prompt dan jalankan:
+
 ```bash
 git clone https://github.com/vhereyga/sales-pos-dashboard.git
 cd sales-pos-dashboard
 ```
 
-### 2. Setup Backend
+---
+
+### Langkah 3: Setup Backend & Environment Variables
+
+#### 3.1. Install Dependensi Backend
+Masuk ke folder `backend/` dan install dependensi package:
+
 ```bash
 cd backend
 bun install
 ```
 
-### 3. Setup Frontend
+#### 3.2. Buat File Environment (`backend/.env`)
+Salin file `.env.example` menjadi `.env`:
+
+```bash
+# Pada Linux / macOS / Git Bash:
+cp .env.example .env
+
+# Pada Windows PowerShell / CMD:
+copy .env.example .env
+```
+
+Buka file `backend/.env` dan sesuaikan kredensial database PostgreSQL Anda:
+
+```env
+DATABASE_URL="postgresql://postgres:PASSWORD_POSTGRES_ANDA@localhost:5432/sales_dashboard"
+DATABASE_URL_TEST="postgresql://postgres:PASSWORD_POSTGRES_ANDA@localhost:5432/sales_dashboard_test"
+JWT_SECRET="sales-pos-dashboard-secret-key-2026"
+PORT=3000
+```
+
+> ⚠️ **Penting:** Ubah `PASSWORD_POSTGRES_ANDA` sesuai dengan kata sandi (*password*) user `postgres` di PC lokal Anda.
+
+---
+
+### Langkah 4: Setup Database PostgreSQL & Prisma
+
+#### 4.1. Buat Database Kosong
+Pastikan server PostgreSQL Anda sudah berjalan, lalu buat database bernama `sales_dashboard` via CLI (`psql`) atau GUI (pgAdmin / DBeaver):
+
+```sql
+CREATE DATABASE sales_dashboard;
+```
+
+#### 4.2. Synchronize Schema & Seeding Data Demo
+Di dalam direktori `backend/`, jalankan perintah migrasi skema dan pengisian data awal demo:
+
+```bash
+# 1. Sinkronisasi skema Prisma ke PostgreSQL (membuat tabel otomatis)
+bun run prisma db push
+
+# 2. Generate Prisma Client
+bunx prisma generate
+
+# 3. Jalankan Seeding Data Demo (Akun Admin/Staff, Katalog Produk, Pelanggan, Histori Penjualan)
+bun run seed
+```
+
+*(Catatan: Anda juga bisa mengimpor file `sales_dashboard.sql` yang ada di root project jika memilih import manual SQL).*
+
+---
+
+### Langkah 5: Setup Frontend Web Client
+
+Buka terminal baru atau pindah ke folder `frontend/`:
+
 ```bash
 cd ../frontend
 bun install
 ```
 
----
+Salin file `.env.example` menjadi `.env`:
 
-## Environment Variables
+```bash
+# Pada Linux / macOS / Git Bash:
+cp .env.example .env
 
-Proyek ini menggunakan *environment variables* untuk mengamankan kredensial database dan rahasia JWT.
-
-### Backend Environment (`backend/.env`)
-Buat file `.env` di dalam direktori `backend/`:
-```env
-DATABASE_URL="postgresql://postgres:PASSWORD_POSTGRES_ANDA@localhost:5432/sales_dashboard"
-JWT_SECRET="sales-pos-dashboard-secret-key-2026"
-PORT=3000
+# Pada Windows PowerShell / CMD:
+copy .env.example .env
 ```
 
-### Frontend Environment (`frontend/.env`)
-Buat file `.env` di dalam direktori `frontend/` (opsional):
+Isi file `frontend/.env` (default):
 ```env
 VITE_API_URL=http://localhost:3000/api/v1
 ```
 
 ---
 
-## PostgreSQL & Prisma Setup
+### Langkah 6: Menjalankan Aplikasi secara Lokal
 
-1. Pastikan layanan PostgreSQL lokal di PC Anda telah berjalan.
-2. Buat satu database kosong untuk proyek ini bernama `sales_dashboard` (misalnya via pgAdmin atau `psql` command: `CREATE DATABASE sales_dashboard;`).
-3. Sesuaikan `DATABASE_URL` pada file `backend/.env` dengan kata sandi PostgreSQL Anda.
-4. Jalankan perintah sinkronisasi schema dan pengisian data awal (*seeding*) di dalam direktori `backend/`:
+Jalankan server backend dan web frontend secara paralel menggunakan **dua terminal terpisah**:
 
-```bash
-cd backend
-
-# Sinkronisasi schema Prisma ke PostgreSQL (pembuatan tabel otomatis)
-bun run prisma db push
-
-# Generate Prisma Client
-bunx prisma generate
-
-# Jalankan Seeding Data Demo (User Admin/Staff, Katalog Produk, Pelanggan, Histori Penjualan)
-bun run seed
-```
-
----
-
-## Running the Application
-
-Jalankan aplikasi dengan menggunakan dua terminal terpisah dari root project:
-
-### Terminal 1 → Backend API Server
+#### Terminal 1 → Backend REST API Server
 ```bash
 cd backend
 bun dev
 ```
-- API REST Server berjalan pada: `http://localhost:3000`
-- Dokumentasi OpenAPI UI Interaktif berjalan pada: `http://localhost:3000/openapi`
+- 🌐 **API REST Server**: `http://localhost:3000`
+- 📚 **Dokumentasi OpenAPI UI (Swagger)**: `http://localhost:3000/openapi`
 
-### Terminal 2 → Frontend Web Client
+#### Terminal 2 → Frontend Web POS Client
 ```bash
 cd frontend
 bun dev
 ```
-- Aplikasi Web POS berjalan pada: `http://localhost:5173`
+- 🖥️ **Aplikasi Web POS Kasir**: `http://localhost:5173`
 
 ---
 
-## Kredensial Demo
+### Langkah 7: Akses & Kredensial Login Demo
 
-Buka browser ke `http://localhost:5173` dan masuk menggunakan akun berikut (tersedia juga tombol *Quick Fill* pada halaman login):
+Buka peramban (browser) Anda ke alamat **`http://localhost:5173`**. Masuk menggunakan salah satu akun demo berikut (atau tekan tombol *Quick Fill* pada halaman login):
 
-| Peran (Role) | Email | Password | Hak Akses |
+| Peran (Role) | Email | Password | Hak Akses & Fitur |
 |---|---|---|---|
-| **ADMIN** | `admin@pos.com` | `admin123` | Akses penuh (CRUD Produk, Pelanggan, Sales, Soft Delete) |
-| **STAFF** | `staff@pos.com` | `staff123` | Akses operator (Lihat Katalog, Buat Transaksi POS Kasir) |
+| 👑 **ADMIN** | `admin@pos.com` | `admin123` | Akses Penuh: CRUD Katalog Produk, CRUD Pelanggan, Dashboard Tren Penjualan, Void/Soft Delete Transaksi |
+| 🧑‍💼 **STAFF** | `staff@pos.com` | `staff123` | Akses Operator: Lihat Katalog Produk, Pembuatan Transaksi Kasir POS, Cetak Struk Belanja |
+
+---
+
+### Langkah 8: Menjalankan Testing Automasi (Opsional)
+
+Untuk memverifikasi bahwa backend berjalan 100% tanpa error, Anda dapat menjalankan seluruh pengujian otomatis dari folder `backend/`:
+
+```bash
+cd backend
+
+# Menjalankan seluruh Unit & Integration Test Suite (29 Pass)
+bun test
+```
 
 ---
 
